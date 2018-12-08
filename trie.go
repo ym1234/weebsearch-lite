@@ -4,9 +4,7 @@ import "errors"
 // import "fmt"
 
 // Trie implementation, can only handle LOWERCASE alphabetic characters
-// TODO(ym): Change to a map, to handle uppercase characters and special characters.
 type Trie struct {
-	// children [27]*Trie
 	children map[rune]*Trie
 	items []string
 	myrune rune // Do I need this??
@@ -16,7 +14,6 @@ func New() *Trie {
 	return &Trie{children: make(map[rune]*Trie)}
 }
 
-//
 func (trie *Trie) Insert(text string, items []string) {
 	trie, index, err := trie.getTree(text)
 	if err != nil {
