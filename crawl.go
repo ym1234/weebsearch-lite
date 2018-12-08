@@ -8,6 +8,8 @@ import (
 	"context"
 )
 
+// TODO(ym): Exit all goroutines when there are no more links left to visit
+
 // Maybe make a type instead of this?
 // or both? like http/handle and handlefunc (although i'm not sure how those work)
 type ProducerFunc func(string) ([]string, []string)
@@ -42,30 +44,33 @@ func (crawler *Crawler) Run(ctx context.Context, start string) {
 }
 
 func (crawler *Crawler) consume(ctx context.Context) {
-	select {
-	case <-ctx.Done():
-		return
-	case item := <-crawler.results:
-		println(len(crawler.results))
-		crawler.Consumer(item)
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case item := <-crawler.results:
+			crawler.Consumer(item)
+		}
 	}
 }
 
 // TODO(ym): Maybe separate "next" generator from producer?
 func (crawler *Crawler) produce(ctx context.Context) {
-	select {
-	case <-ctx.Done():
-		return
-	case item := <-crawler.next:
-		// TODO(ym): Handle errors
-		body, _ := crawler.URL(item)
-		results, nexts := crawler.Producer(string(body))
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case item := <-crawler.next:
+			// TODO(ym): Handle errors
+			body, _ := crawler.URL(item)
+			results, nexts := crawler.Producer(string(body))
 
-		for _, result := range results {
-			crawler.results <- result
-		}
-		for _, next := range nexts {
-			crawler.next <- next
+			for _, result := range results {
+				crawler.results <- result
+			}
+			for _, next := range nexts {
+				crawler.next <- next
+			}
 		}
 	}
 }

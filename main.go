@@ -31,21 +31,20 @@ func testTrie() {
 func testCrawler() {
 	pattern := regexp.MustCompile(`https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)`)
 	crawler := Default(runtime.NumCPU())
-	out := make(chan string, 10000)
+	out := make(chan string, 10)
+
 	crawler.Producer = func(body string) ([]string, []string) {
 		result := pattern.FindAllString(body, -1)
-		out <- fmt.Sprint(result)
 		return result, nil
 	}
 	crawler.Consumer = func(result string) {
 			out <- result
 	}
+
 	newContext, cancel := context.WithCancel(context.Background())
 	crawler.Run(newContext, "https://github.com/coreos/go-systemd")
-	out2 := make(chan string, 10000)
+
 	for i := range out {
-		fmt.Println(len(out2), len(out))
-		out2 <- i
 		println(i)
 	}
 

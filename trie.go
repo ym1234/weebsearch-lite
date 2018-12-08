@@ -3,7 +3,6 @@ package main
 import "errors"
 // import "fmt"
 
-// Trie implementation, can only handle LOWERCASE alphabetic characters
 type Trie struct {
 	children map[rune]*Trie
 	items []string
