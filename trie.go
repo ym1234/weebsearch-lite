@@ -1,12 +1,14 @@
 package main
 
 import "errors"
-// import "fmt"
+
+// TODO(ym): critbit trees and qp trees to get rid of the map
+// rewrite... who the fuck wrote this :^)
 
 type Trie struct {
 	children map[rune]*Trie
-	items []string
-	myrune rune // Do I need this??
+	items    []string
+	myrune   rune // Do I need this??
 }
 
 func New() *Trie {
@@ -26,18 +28,19 @@ func (trie *Trie) Insert(text string, items []string) {
 }
 
 func (trie *Trie) getTree(text string) (*Trie, int, error) {
-	for i, c := range text{
+	for i, c := range text {
 		if child := trie.children[c]; child != nil {
 			trie = child
-		} else { return trie, i, errors.New("Failed to find items") }
+		} else {
+			return trie, i, errors.New("Failed to find items")
+		}
 	}
-	return trie, len(text)-1, nil
+	return trie, len(text) - 1, nil
 }
 
 // not the most efficient, but it does its job
 func (trie *Trie) recurse() []string {
-	list := make([]string, 0, len(trie.items))
-	list = append(list, trie.items...)
+	list := append(make([]string, 0, len(trie.items)), trie.items...)
 	for _, elem := range trie.children {
 		list = append(list, elem.recurse()...)
 	}
@@ -45,35 +48,45 @@ func (trie *Trie) recurse() []string {
 }
 
 func (trie *Trie) GetRecurse(text string) ([]string, error) {
-	if tree, _, err := trie.getTree(text); err == nil {
+	tree, _, err := trie.getTree(text)
+	if err == nil {
 		return tree.recurse(), nil
-	} else { return nil, err }
+	}
+	return nil, err
 }
 
 // Should I copy the slice?
 func (trie *Trie) Get(text string) ([]string, error) {
-	if tree, _, err := trie.getTree(text); err == nil {
+	tree, _, err := trie.getTree(text)
+	if err == nil {
 		return tree.items, nil
-	} else { return nil, err }
+	}
+	return nil, err
 }
 
 func (trie *Trie) Add(name, item string) error {
-	if tree, _, err := trie.getTree(name); err == nil {
+	tree, _, err := trie.getTree(name)
+	if err == nil {
 		tree.items = append(tree.items, item)
 		return nil
-	} else { return err }
+	}
+	return err
 }
 
 func (trie *Trie) Clear(name string) error {
-	if tree, _, err := trie.getTree(name); err == nil {
-		tree.items = []string{}
+	tree, _, err := trie.getTree(name)
+	if err == nil {
+		tree.items = nil
 		return nil
-	} else { return err }
+	}
+	return err
 }
 
 func (trie *Trie) AddBulk(name string, items []string) error {
-	if tree, _, err := trie.getTree(name); err == nil {
+	tree, _, err := trie.getTree(name)
+	if err == nil {
 		tree.items = append(tree.items, items...)
 		return nil
-	} else { return err }
+	}
+	return err
 }
